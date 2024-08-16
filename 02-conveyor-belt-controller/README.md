@@ -30,6 +30,17 @@ Your team is tasked with a critical mission: develop a **Conveyor Belt Controlle
   - **Success:** `"OK"`
   - **Error:** `"ERROR <Error Message>"`
 
+#### Protocol C: JSON-Based Protocol
+- **Connection:** TCP/IP
+- **Data Format:** JSON
+- **Commands:**
+  - **Start Conveyor:** `{"command": "START"}`
+  - **Stop Conveyor:** `{"command": "STOP"}`
+  - **Set Speed:** `{"command": "SPEED", "value": <speed>}` (e.g., `{"command": "SPEED", "value": 5}`)
+- **Responses:**
+  - **Success:** `{"status": "OK"}`
+  - **Error:** `{"status": "ERROR", "message": "<Error Message>"}`
+
 ### Deliverables
 
 1. **Conveyor Belt Controller Interface:** A CLI tool for controlling and monitoring conveyor belts using both protocols.
