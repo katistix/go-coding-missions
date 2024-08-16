@@ -65,7 +65,7 @@ func getTextOfNode(node *html.Node) string {
 	return text
 }
 
-func findAthingElements(n *html.Node, wg *sync.WaitGroup) {
+func findAthingElements(n *html.Node, wg *sync.WaitGroup, results chan<- string) {
 	if n.Type == html.ElementNode && hasClass(n, "athing") {
 		// We found an element with the class "athing"
 
@@ -80,18 +80,21 @@ func findAthingElements(n *html.Node, wg *sync.WaitGroup) {
 			titleChild := getNthChild(node, 3)
 			titleText := getTextOfNode(titleChild)
 			if titleText != "" {
-				fmt.Println(titleText)
+				// fmt.Println(titleText)
+				results <- titleText // Send the result to the channel
+
 			}
 		}(n) // Actually call the goroutine
 	}
 
 	// Recursively traverse the HTML tree
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		findAthingElements(c, wg)
+		findAthingElements(c, wg, results)
 	}
 }
 
 func main() {
+
 	// Fetch the page
 	res, err := http.Get("https://news.ycombinator.com/")
 	if err != nil {
@@ -109,13 +112,26 @@ func main() {
 		panic(err)
 	}
 
+	results := make(chan string)
+
 	// Use a WaitGroup to wait for all goroutines to complete
 	var wg sync.WaitGroup
 
+	// var wg sync.WaitGroup
+	go func() {
+		wg.Wait()      // Wait for all goroutines to finish
+		close(results) // Close the channel once all work is done
+	}()
+
 	// Traverse the HTML tree and find all elements with the class "athing"
-	findAthingElements(doc, &wg)
+	go findAthingElements(doc, &wg, results)
 
 	// Wait for all goroutines to complete
-	wg.Wait()
+	// wg.Wait()
+
+	// Read from the results channel and print each result in order
+	for result := range results {
+		fmt.Println(result)
+	}
 
 }
